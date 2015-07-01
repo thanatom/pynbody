@@ -292,7 +292,7 @@ class GadgetFile(object):
                 if record_size != 256:
                     raise IOError("Bad record size for HEAD in " + filename)
                 t_part = self.header.npart.sum()
-                if  ((not self.format2) and 
+                if  ((not self.format2) and
                 	((self.header.npart != 0) * (self.header.mass == 0)).sum()==0):
                     # The "Spec" says that if all the existing particle masses
                     # are in the header, we shouldn't have a MASS block
@@ -604,6 +604,8 @@ class GadgetFile(object):
             # Write format 2 header header
             head = struct.pack(
                 self.endian + 'I4sII', blkheadsize, name, nextblock, blkheadsize)
+        else:
+            head = ""
         # Also write the record size, which we want for all files*/
         head += self.write_block_footer(name, blocksize)
         return head
