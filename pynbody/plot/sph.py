@@ -103,7 +103,7 @@ def velocity_image(sim, width="10 kpc", vector_color='black', edgecolor='black',
     if _units_imply_projected_plot(qty,sim,units):
         velocity_average = qty
     else:
-        velocity_average = None
+        velocity_average = kwargs.get('av_z',None)
 
     vx = image(sim, qty=vec_x, width=width, log=False,
                resolution=vector_resolution, noplot=True,
