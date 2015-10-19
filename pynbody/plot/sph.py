@@ -50,7 +50,9 @@ def faceon_image(sim, *args, **kwargs):
 
 def velocity_image(sim, width="10 kpc", vector_color='black', edgecolor='black',
                    vector_resolution=40, scale=None, mode='quiver', key_x=0.3, key_y=0.9,
-                   key_color='white', key_length="100 km s**-1", density=1.0, **kwargs):
+                   key_color='white', key_length="100 km s**-1", density=1.0,
+                   vec_x = 'vx', vec_y='vy',
+                   **kwargs):
     """
 
     Make an SPH image of the given simulation with velocity vectors overlaid on top.
@@ -83,18 +85,32 @@ def velocity_image(sim, width="10 kpc", vector_color='black', edgecolor='black',
 
     *density* (1.0): Density of stream lines (stream mode only)
 
+    *vec_x* (vx): Quantity to use as x component of vector
+
+    *vec_y* (vy): Quantity to use as y component of vector
+
     """
 
     subplot = kwargs.get('subplot', False)
+    qty = kwargs.get('qty','rho')
+    units = kwargs.get('units',None)
+
     if subplot:
         p = subplot
     else:
         import matplotlib.pylab as p
 
-    vx = image(sim, qty='vx', width=width, log=False,
-               resolution=vector_resolution, noplot=True)
-    vy = image(sim, qty='vy', width=width, log=False,
-               resolution=vector_resolution, noplot=True)
+    if _units_imply_projected_plot(qty,sim,units):
+        velocity_average = qty
+    else:
+        velocity_average = None
+
+    vx = image(sim, qty=vec_x, width=width, log=False,
+               resolution=vector_resolution, noplot=True,
+               av_z=velocity_average)
+    vy = image(sim, qty=vec_y, width=width, log=False,
+               resolution=vector_resolution, noplot=True,
+               av_z=velocity_average)
     key_unit = _units.Unit(key_length)
 
     if isinstance(width, str) or issubclass(width.__class__, _units.UnitBase):
@@ -334,19 +350,9 @@ def image(sim, qty='rho', width="10 kpc", resolution=500, units=None, log=True,
     if perspective and not av_z:
         kernel = sph.Kernel2D()
 
-    if units is not None:
-        try:
-            sim[qty].units.ratio(units, **sim[qty].conversion_context())
-            # if this fails, perhaps we're requesting a projected image?
+    if _units_imply_projected_plot(qty,sim,units):
+        kernel = sph.Kernel2D()
 
-        except _units.UnitsException:
-            # if the following fails, there's no interpretation this routine
-            # can cope with
-            sim[qty].units.ratio(
-                units / (sim['x'].units), **sim[qty].conversion_context())
-
-            # if we get to this point, we want a projected image
-            kernel = sph.Kernel2D()
 
     if av_z:
         if isinstance(kernel, sph.Kernel2D):
@@ -478,6 +484,23 @@ def image(sim, qty='rho', width="10 kpc", resolution=500, units=None, log=True,
         # for some systems you don't get back to the command prompt
 
     return im
+
+
+def _units_imply_projected_plot(qty, sim, plot_units):
+    if plot_units is not None:
+        try:
+            sim[qty].units.ratio(plot_units, **sim[qty].conversion_context())
+            # if this fails, perhaps we're requesting a projected image?
+
+        except _units.UnitsException:
+            # if the following fails, there's no interpretation this routine
+            # can cope with
+            sim[qty].units.ratio(
+                plot_units / (sim['x'].units), **sim[qty].conversion_context())
+
+            # if we get to this point, we want a projected image
+            return True
+    return False
 
 
 def image_radial_profile(im, bins=100):
