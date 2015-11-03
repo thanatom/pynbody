@@ -121,7 +121,7 @@ def halo_lum(sim, band='v'):
     return np.sum(10.0 ** ((sun_abs_mag - sim.star[band + '_mag']) / 2.5))
 
 
-def half_light_r(sim, band='v'):
+def half_light_r(sim, band='v',center=True):
     '''Calculate half light radius
 
     Calculates entire luminosity of simulation, finds half that, sorts
@@ -130,29 +130,14 @@ def half_light_r(sim, band='v'):
     '''
     import pynbody
     import pynbody.filt as f
+    sim = sim.s
     half_l = halo_lum(sim, band=band) * 0.5
+    if center: pynbody.analysis.angmom.faceon(sim)
+    indr = np.argsort(sim['r'])
+    sun_abs_mag = {'u':5.56,'b':5.45,'v':4.8,'r':4.46,'i':4.1,'j':3.66,
+                   'h':3.32,'k':3.28}[band]
+    lumcumsum = np.cumsum(10.0 ** ((sun_abs_mag - 
+                                    sim[indr][band + '_mag']) / 2.5))
 
-    max_high_r = np.max(sim.star['r'])
-    test_r = 0.5 * max_high_r
-    testrf = f.LowPass('r', test_r)
-    min_low_r = 0.0
-    test_l = halo_lum(sim[testrf], band=band)
-    it = 0
-    while ((np.abs(test_l - half_l) / half_l) > 0.01):
-        it = it + 1
-        if (it > 20):
-            break
+    return sim[indr][np.argwhere(lumcumsum < half_l).max()]['r']
 
-        if (test_l > half_l):
-            test_r = 0.5 * (min_low_r + test_r)
-        else:
-            test_r = (test_r + max_high_r) * 0.5
-        testrf = f.LowPass('r', test_r)
-        test_l = halo_lum(sim[testrf], band=band)
-
-        if (test_l > half_l):
-            max_high_r = test_r
-        else:
-            min_low_r = test_r
-
-    return test_r * sim.star['r'].units
