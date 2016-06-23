@@ -15,7 +15,6 @@ import imp
 
 from . import backcompat
 from . import configuration
-
 from .configuration import config, config_parser, logger
 
 from . import util, filt, array, family, snapshot

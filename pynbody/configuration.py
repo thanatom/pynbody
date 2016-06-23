@@ -7,6 +7,7 @@ import logging
 import multiprocessing
 import copy
 from . import backcompat
+from . import openmp
 
 def _get_config_parser_with_defaults():
     # Create config dictionaries which will be required by subpackages
@@ -72,6 +73,8 @@ def _get_basic_config_from_parser(config_parser):
 
     if config['number_of_threads']<0:
         config['number_of_threads']=multiprocessing.cpu_count()
+
+    openmp.set_threads(config['number_of_threads'])
 
     config['gravity_calculation_mode'] = config_parser.get(
         'general', 'gravity_calculation_mode')
