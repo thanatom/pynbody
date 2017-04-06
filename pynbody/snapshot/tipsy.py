@@ -105,22 +105,31 @@ class TipsySnap(SimSnap):
         # by default all fields are floats -- we look at the param file to determine
         # whether we should expect some doubles
 
-        if self._paramfile.get('bDoublePos', 0):
+        if self._paramfile.get('bDoublePos', False):
             ptype = 'd'
         else:
             ptype = 'f'
 
-        if self._paramfile.get('bDoubleVel', 0):
+        if self._paramfile.get('bDoubleVel', False):
             vtype = 'd'
         else:
             vtype = 'f'
 
+        if self._paramfile.get('bDoubleAll', False):
+            ptype = 'd'
+            vtype = 'd'
+            other_type = 'd'
+        else:
+            other_type = 'f'
+
         self._g_dtype = np.dtype({'names': ("mass", "x", "y", "z", "vx", "vy", "vz", "rho", "temp", "eps", "metals", "phi"),
-                                  'formats': ('f', ptype, ptype, ptype, vtype, vtype, vtype, 'f', 'f', 'f', 'f', 'f')})
+                                  'formats': (other_type, ptype, ptype, ptype, vtype, vtype, vtype,
+                                              other_type, other_type, other_type, other_type, other_type)})
         self._d_dtype = np.dtype({'names': ("mass", "x", "y", "z", "vx", "vy", "vz", "eps", "phi"),
-                                  'formats': ('f', ptype, ptype, ptype, vtype, vtype, vtype, 'f', 'f')})
+                                  'formats': (other_type, ptype, ptype, ptype, vtype, vtype, vtype, other_type, other_type)})
         self._s_dtype = np.dtype({'names': ("mass", "x", "y", "z", "vx", "vy", "vz", "metals", "tform", "eps", "phi"),
-                                  'formats': ('f', ptype, ptype, ptype, vtype, vtype, vtype, 'f', 'f', 'f', 'f')})
+                                  'formats': (other_type, ptype, ptype, ptype, vtype, vtype, vtype,
+                                              other_type, other_type, other_type, other_type)})
 
         if not self._paramfile.has_key('dKpcUnit'):
             if must_have_paramfile:
