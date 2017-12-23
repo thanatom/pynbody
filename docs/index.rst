@@ -13,10 +13,8 @@ astrophysical N-body and Smooth Particle Hydrodynamics
 simulations, supporting python 2.6+ and 3.3+.
 
 We recommend you get started by reading about
-:ref:`pynbody-installation` and trying the :ref:`tutorials`. We are
-happy to provide further assistance via our
-`user group email list
-<https://groups.google.com/forum/?fromgroups#!forum/pynbody-users>`_.
+:ref:`pynbody-installation` and trying the :ref:`tutorials`. To obtain
+assistance, open a `github issue <https://github.com/pynbody/pynbody/issues>`_.
 
 Where next?
 -----------
@@ -59,13 +57,6 @@ Seeking Further Assistance
 
 If the tutorials and reference documentation don't answer your question,
 any problem might be described in :doc:`pitfalls`.
-
-If you still find yourself stuck, don't hesitate to post a message to the
-`users group
-<https://groups.google.com/forum/?fromgroups#!forum/pynbody-users>`_.
-If you have a Google account you can join the groups
-easily, but if you don't have one please click on the `About` button
-of the group you are interested in and contact the owner.
 
 We have found that most development discussion takes place within our
 `github issue tracker <https://github.com/pynbody/pynbody/issues>`_ -- if you
