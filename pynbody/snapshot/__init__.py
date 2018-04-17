@@ -1649,7 +1649,7 @@ class SubSnap(SimSnap):
     sub-viewed using the given slice."""
 
     def __init__(self, base, _slice):
-        self.base = base
+        self._base = base
         self._file_units_system = base._file_units_system
         self._unifamily = base._unifamily
 
@@ -1685,45 +1685,49 @@ class SubSnap(SimSnap):
 
         self._descriptor = descriptor
 
+    @property
+    def base(self):
+        return self._base
+
     def _inherit(self):
         for x in self._inherited:
-            setattr(self, x, getattr(self.base, x))
+            setattr(self, x, getattr(self._base, x))
 
     def _get_array(self, name, index=None, always_writable=False):
         if _subarray_immediate_mode or self.immediate_mode:
             return self._get_from_immediate_cache(name,
-                                                  lambda: self.base._get_array(
+                                                  lambda: self._base._get_array(
                                                       name, None, always_writable)[self._slice])
 
         else:
-            ret = self.base._get_array(name, util.concatenate_indexing(
+            ret = self._base._get_array(name, util.concatenate_indexing(
                 self._slice, index), always_writable)
             ret.family = self._unifamily
             return ret
 
     def _set_array(self, name, value, index=None):
-        self.base._set_array(
+        self._base._set_array(
             name, value, util.concatenate_indexing(self._slice, index))
 
     def _get_family_array(self, name, fam, index=None, always_writable=False):
-        base_family_slice = self.base._get_family_slice(fam)
+        base_family_slice = self._base._get_family_slice(fam)
         sl = util.relative_slice(base_family_slice,
-                                 util.intersect_slices(self._slice, base_family_slice, len(self.base)))
+                                 util.intersect_slices(self._slice, base_family_slice, len(self._base)))
         sl = util.concatenate_indexing(sl, index)
         if _subarray_immediate_mode or self.immediate_mode:
             return self._get_from_immediate_cache((name, fam),
-                                                  lambda: self.base._get_family_array(
+                                                  lambda: self._base._get_family_array(
                 name, fam, None, always_writable)[sl])
         else:
-            return self.base._get_family_array(name, fam, sl, always_writable)
+            return self._base._get_family_array(name, fam, sl, always_writable)
 
     def _set_family_array(self, name, family, value, index=None):
         fslice = self._get_family_slice(family)
-        self.base._set_family_array(
+        self._base._set_family_array(
             name, family, value, util.concatenate_indexing(fslice, index))
 
     def _promote_family_array(self, *args, **kwargs):
-        self.base._promote_family_array(*args, **kwargs)
+        self._base._promote_family_array(*args, **kwargs)
 
     def __delitem__(self, name):
         # is this the right behaviour?
@@ -1735,31 +1739,31 @@ class SubSnap(SimSnap):
 
     @property
     def _filename(self):
-        return self.base._filename + ":" + self._descriptor
+        return self._base._filename + ":" + self._descriptor
 
     def keys(self):
-        return self.base.keys()
+        return self._base.keys()
 
     def loadable_keys(self, fam=None):
         if self._unifamily:
-            return self.base.loadable_keys(self._unifamily)
+            return self._base.loadable_keys(self._unifamily)
         else:
-            return self.base.loadable_keys(fam)
+            return self._base.loadable_keys(fam)
 
     def derivable_keys(self):
-        return self.base.derivable_keys()
+        return self._base.derivable_keys()
 
     def infer_original_units(self, *args):
         """Return the units on disk for a quantity with the specified dimensions"""
-        return self.base.infer_original_units(*args)
+        return self._base.infer_original_units(*args)
 
     def _get_family_slice(self, fam):
         sl = util.relative_slice(self._slice,
-                                 util.intersect_slices(self._slice, self.base._get_family_slice(fam), len(self.base)))
+                                 util.intersect_slices(self._slice, self._base._get_family_slice(fam), len(self._base)))
         return sl
 
     def _load_array(self, array_name, fam=None, **kwargs):
-        self.base._load_array(array_name, fam)
+        self._base._load_array(array_name, fam)
 
     def write_array(self, array_name, fam=None, **kwargs):
         fam = fam or self._unifamily
@@ -1767,28 +1771,28 @@ class SubSnap(SimSnap):
             raise IOError(
                 "Array writing is available for entire simulation arrays or family-level arrays, but not for arbitrary subarrays")
 
-        self.base.write_array(array_name, fam=fam, **kwargs)
+        self._base.write_array(array_name, fam=fam, **kwargs)
 
     def _derive_array(self, array_name, fam=None):
-        self.base._derive_array(array_name, fam)
+        self._base._derive_array(array_name, fam)
 
     def family_keys(self, fam=None):
-        return self.base.family_keys(fam)
+        return self._base.family_keys(fam)
 
     def _create_array(self, *args, **kwargs):
-        self.base._create_array(*args, **kwargs)
+        self._base._create_array(*args, **kwargs)
 
     def _create_family_array(self, *args, **kwargs):
-        self.base._create_family_array(*args, **kwargs)
+        self._base._create_family_array(*args, **kwargs)
 
     def physical_units(self, *args, **kwargs):
-        self.base.physical_units(*args, **kwargs)
+        self._base.physical_units(*args, **kwargs)
 
     def is_derived_array(self, v, fam=None):
-        return self.base.is_derived_array(v)
+        return self._base.is_derived_array(v)
 
     def unlink_array(self, name):
-        self.base.unlink_array(name)
+        self._base.unlink_array(name)
 
     def get_index_list(self, relative_to, of_particles=None):
         if of_particles is None:
@@ -1797,7 +1801,7 @@ class SubSnap(SimSnap):
         if relative_to is self:
             return of_particles
 
-        return self.base.get_index_list(relative_to, util.concatenate_indexing(self._slice, of_particles))
+        return self._base.get_index_list(relative_to, util.concatenate_indexing(self._slice, of_particles))
 
 
 class IndexedSubSnap(SubSnap):
@@ -1808,7 +1812,7 @@ class IndexedSubSnap(SubSnap):
     def __init__(self, base, index_array):
 
         self._descriptor = "indexed"
-        self.base = base
+        self._base = base
         self._inherit()
 
         self._unifamily = base._unifamily
@@ -1872,7 +1876,7 @@ class FamilySubSnap(SubSnap):
     """Represents a one-family portion of a parent snap object"""
 
     def __init__(self, base, fam):
-        self.base = base
+        self._base = base
 
         self._inherit()
 
